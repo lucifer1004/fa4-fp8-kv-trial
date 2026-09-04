@@ -6,12 +6,20 @@ from __future__ import annotations
 import inspect
 import json
 import os
+from pathlib import Path
+
+
+_COMPATIBILITY_PATH = Path(__file__).resolve().parents[1] / "compatibility.json"
 
 
 def main() -> int:
     import torch
 
     errors = []
+    compatibility = json.loads(_COMPATIBILITY_PATH.read_text(encoding="utf-8"))
+    expected_implementation = compatibility["sglang"][
+        "splitkv_implementation_identity"
+    ]
     if not torch.cuda.is_available():
         errors.append("CUDA is not available")
         capability = None
@@ -43,6 +51,11 @@ def main() -> int:
         if missing:
             errors.append(f"SGLang wrapper is missing parameters: {missing}")
         implementation = splitkv_implementation_identity()
+        if implementation != expected_implementation:
+            errors.append(
+                "SGLang implementation identity mismatch: "
+                f"found {implementation}, expected {expected_implementation}"
+            )
     except (ImportError, AttributeError, OSError) as error:
         errors.append(f"supplied SGLang implementation is unavailable: {error}")
 
@@ -57,6 +70,8 @@ def main() -> int:
             "torch": torch.__version__,
             "cuda": torch.version.cuda,
             "splitkv_implementation": implementation,
+            "expected_splitkv_implementation": expected_implementation,
+            "sglang_commit": compatibility["sglang"]["commit"],
         },
         "calibration": {
             "mode": os.getenv("SGLANG_FA4_SPLITKV_CALIBRATION", "load"),

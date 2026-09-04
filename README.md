@@ -27,6 +27,19 @@ clear error if a target-verification request reaches one of those combinations.
 The scripts must run inside the Python environment of the supplied SGLang
 build.  They do not install or replace PyTorch, Triton, CUDA, or SGLang.
 
+## Compatible SGLang revision
+
+This trial release is pinned to the following SGLang source revision:
+
+- repository: `https://github.com/lucifer1004/sglang`;
+- branch: `feature/fa4-sm120-fp8-kv-splitkv`;
+- commit: `43ac46a605052f82487a5792cd866851438c0b14`;
+- upstream base: `f59a4840c508766d13ed982272bdf68a974a462f`.
+
+The same values are recorded in `compatibility.json`.  The environment checker
+rejects a SGLang build whose SplitKV implementation identity does not match
+this release, even if its public Python API has the expected parameters.
+
 ## Quick start
 
 From this directory, with the supplied SGLang environment active:
